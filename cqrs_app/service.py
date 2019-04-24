@@ -53,11 +53,6 @@ class ApiService:
         response = self.query_rpc.get_user(user_id)
         return 200, {'Content-Type': 'application/json'}, response
 
-    @http('GET', '/users/<string:permission>/permission')
-    def get_users_by_permission(self, request, permission):
-        response = self.query_rpc.get_users_by_permission(permission)
-        return 200, {'Content-Type': 'application/json'}, response
-
 
 class CommandStack:
     name = 'command_stack'
@@ -78,7 +73,6 @@ class CommandStack:
             self.db.commit()
             data['id'] = user.id
             self.dispatch('user_created', data)
-            self.dispatch('permission_user_related', data)
             return data
         except Exception as e:
             self.db.rollback()
@@ -102,35 +96,6 @@ class Events:
         except Exception as e:
             return e
 
-    @event_handler('command_stack', 'permission_user_related')
-    def permission_user_related_normalize_db(self, data):
-        user_struct = UsersStruct(
-            id=data['id'],
-            name=data['name'],
-            email=data.get('email'),
-            description=data.get('description'),
-            permission=data['permission']
-        )
-        try:
-            per = UsersPerPermissionsQueryModel.objects.get(
-                permission=data['permission']
-            )
-            per.users.append(user_struct)
-            per.save()
-        except mongoengine.DoesNotExist:
-            try:
-                permission = self.db.query(PermissionsCommandModel).\
-                    filter_by(name=data['permission']).one()
-
-                up = UsersPerPermissionsQueryModel(
-                    permission=data['permission'],
-                    description=permission.description,
-                )
-                up.users.append(user_struct)
-                up.save()
-            except Exception as e:
-                return e
-
 
 class QueryStack:
     name = 'query_stack'
@@ -153,17 +118,5 @@ class QueryStack:
             offset = (page - 1) * limit
             users = UsersQueryModel.objects.skip(offset).limit(limit)
             return users.to_json()
-        except Exception as e:
-            return e
-
-    @rpc
-    def get_users_by_permission(self, permission):
-        try:
-            per = UsersPerPermissionsQueryModel.objects.get(
-                permission=permission
-            )
-            return per.to_json()
-        except mongoengine.DoesNotExist as e:
-            return e
         except Exception as e:
             return e

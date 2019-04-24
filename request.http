@@ -1,0 +1,49 @@
+POST http://localhost/user HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Vinicius Pacheco",
+    "email": "viniciusp@test.com",
+    "description": "It's just a simple test",
+    "permission": "admin"
+}
+
+###
+
+POST http://localhost/user HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Vinicius Feitosa",
+    "email": "viniciusf@test.com",
+    "description": "It's just a simple test",
+    "permission": "admin"
+}
+
+###
+
+POST http://localhost/user HTTP/1.1
+content-type: application/json
+
+{
+    "name": "Vinicius Pacheco",
+    "email": "viniciusp@test.com",
+    "description": "It's just a simple test",
+    "permission": "user"
+}
+
+###
+
+GET http://localhost/users/002b4cd2-6637-11e9-998c-0242ac130005 HTTP/1.1
+
+###
+
+GET http://localhost/users/1/10 HTTP/1.1
+
+###
+
+GET http://localhost/users/admin/permission HTTP/1.1
+
+###
+
+GET http://localhost/users/user/permission HTTP/1.1

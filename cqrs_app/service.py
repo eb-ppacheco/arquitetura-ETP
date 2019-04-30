@@ -53,7 +53,7 @@ class ApiService:
         response = self.query_rpc.get_user(user_id)
         return 200, {'Content-Type': 'application/json'}, response
 
-    @http('GET', '/users/<string:permission>/permission')
+    @http('GET', '/users/permission<string:permission>')
     def get_users_by_permission(self, request, permission):
         response = self.query_rpc.get_users_by_permission(permission)
         return 200, {'Content-Type': 'application/json'}, response
@@ -112,24 +112,13 @@ class Events:
             permission=data['permission']
         )
         try:
-            per = UsersPerPermissionsQueryModel.objects.get(
-                permission=data['permission']
+            user_permissions = UsersPerPermissionsQueryModel.objects.get(
+                permission=UsersStruct(permission=data['permission'])
             )
-            per.users.append(user_struct)
-            per.save()
-        except mongoengine.DoesNotExist:
-            try:
-                permission = self.db.query(PermissionsCommandModel).\
-                    filter_by(name=data['permission']).one()
-
-                up = UsersPerPermissionsQueryModel(
-                    permission=data['permission'],
-                    description=permission.description,
-                )
-                up.users.append(user_struct)
-                up.save()
-            except Exception as e:
-                return e
+            user_permissions.users.append(user_struct)
+            user_permissions.save()
+        except Exception as e:
+            return e
 
 
 class QueryStack:
